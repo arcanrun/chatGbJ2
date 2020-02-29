@@ -112,13 +112,13 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     private void sendMessage() {
         String msg = tfMessage.getText();
         if ("".equals(msg)) return;
-        String username = tfLogin.getText();
-        String censoredMsg = censoredFilter(msg);
+//        String username = tfLogin.getText();
+
 
         tfMessage.setText(null);
         tfMessage.requestFocusInWindow();
-        socketThread.sendMessage(Library.getTypeBcastClient(censoredMsg));
-        wrtMsgToLogFile(censoredMsg, username);
+        socketThread.sendMessage(Library.getTypeBcastClient(msg));
+//        wrtMsgToLogFile(msg, username);
     }
 
     private void createCensoredWordFile() {
@@ -151,9 +151,9 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         return res;
     }
 
-    private void wrtMsgToLogFile(String msg, String username) {
+    private void wrtMsgToLogFile(String date,String msg, String username) {
         try (FileWriter out = new FileWriter("log.txt", true)) {
-            out.write(username + ": " + msg + "\n");
+            out.write(date + username + ": " + msg + "\n");
             out.flush();
         } catch (IOException e) {
             if (!shownIoErrors) {
@@ -161,6 +161,21 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
                 showException(Thread.currentThread(), e);
             }
         }
+    }
+
+    private void getHistory() {
+        int raws = 100;
+        try (BufferedReader in = new BufferedReader(new FileReader("log.txt"))) {
+            String str;
+
+            while ((str = in.readLine()) != null & raws != 0) {
+                log.append(str + "\n");
+                raws--;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private void putLog(String msg) {
@@ -215,6 +230,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     public void onSocketReady(SocketThread thread, Socket socket) {
         panelBottom.setVisible(true);
         panelTop.setVisible(false);
+        getHistory();
         String login = tfLogin.getText();
         String password = new String(tfPassword.getPassword());
         thread.sendMessage(Library.getAuthRequest(login, password));
@@ -246,8 +262,10 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
                 socketThread.close();
                 break;
             case Library.TYPE_BROADCAST:
+                String censoredMsg = censoredFilter(arr[3]);
                 putLog(DATE_FORMAT.format(Long.parseLong(arr[1])) +
-                        arr[2] + ": " + arr[3]);
+                        arr[2] + ": " + censoredMsg);
+                wrtMsgToLogFile(DATE_FORMAT.format(Long.parseLong(arr[1])), censoredMsg, arr[2]);
                 break;
             case Library.USER_LIST:
                 String users = msg.substring(Library.USER_LIST.length() +
