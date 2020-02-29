@@ -8,8 +8,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -72,7 +71,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         add(scrollUser, BorderLayout.EAST);
         add(panelTop, BorderLayout.NORTH);
         add(panelBottom, BorderLayout.SOUTH);
-
+        createCensoredWordFile();
         setVisible(true);
     }
 
@@ -112,12 +111,44 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     private void sendMessage() {
         String msg = tfMessage.getText();
-        String username = tfLogin.getText();
         if ("".equals(msg)) return;
+        String username = tfLogin.getText();
+        String censoredMsg = censoredFilter(msg);
+        System.out.println(censoredMsg);
         tfMessage.setText(null);
         tfMessage.requestFocusInWindow();
-        socketThread.sendMessage(Library.getTypeBcastClient(msg));
-        //wrtMsgToLogFile(msg, username);
+        socketThread.sendMessage(Library.getTypeBcastClient(censoredMsg));
+        wrtMsgToLogFile(censoredMsg, username);
+    }
+
+    private void createCensoredWordFile() {
+        String[] stopWords = {"fuck", "bitch", "mazafaka"};
+        try (BufferedWriter out = new BufferedWriter(new FileWriter("censor.txt", true))) {
+            for (String str : stopWords) {
+                out.write(str + "\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String censoredFilter(String msg) {
+        String res = msg;
+        try (BufferedReader in = new BufferedReader(new FileReader("censor.txt"))) {
+            String str;
+
+            while ((str = in.readLine()) != null) {
+                if (res.toLowerCase().contains(str)) {
+                    res = res.replace(str, "*".repeat(str.length())
+                    );
+                }
+
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return res;
     }
 
     private void wrtMsgToLogFile(String msg, String username) {
@@ -165,7 +196,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     /**
      * Socket thread listener methods
-     * */
+     */
 
     @Override
     public void onSocketStart(SocketThread thread, Socket socket) {
@@ -230,3 +261,4 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         }
     }
 }
+
