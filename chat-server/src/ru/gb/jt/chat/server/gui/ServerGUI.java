@@ -9,7 +9,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class ServerGUI extends JFrame implements ActionListener, Thread.UncaughtExceptionHandler, ChatServerListener {
-
     private static final int POS_X = 800;
     private static final int POS_Y = 200;
     private static final int WIDTH = 600;
