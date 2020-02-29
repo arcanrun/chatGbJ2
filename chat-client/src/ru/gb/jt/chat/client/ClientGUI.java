@@ -114,7 +114,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         if ("".equals(msg)) return;
         String username = tfLogin.getText();
         String censoredMsg = censoredFilter(msg);
-        System.out.println(censoredMsg);
+
         tfMessage.setText(null);
         tfMessage.requestFocusInWindow();
         socketThread.sendMessage(Library.getTypeBcastClient(censoredMsg));
@@ -123,7 +123,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     private void createCensoredWordFile() {
         String[] stopWords = {"fuck", "bitch", "mazafaka"};
-        try (BufferedWriter out = new BufferedWriter(new FileWriter("censor.txt", true))) {
+        try (BufferedWriter out = new BufferedWriter(new FileWriter("censor.txt"))) {
             for (String str : stopWords) {
                 out.write(str + "\n");
             }
