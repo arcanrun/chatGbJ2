@@ -12,7 +12,10 @@ import java.io.*;
 import java.net.Socket;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 
 public class ClientGUI extends JFrame implements ActionListener, Thread.UncaughtExceptionHandler, SocketThreadListener {
 
@@ -164,13 +167,28 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     }
 
     private void getHistory() {
+       ArrayList<String> tmp = new ArrayList<>();
+       ArrayList<String> res = new ArrayList<>();
+
+
         int raws = 100;
         try (BufferedReader in = new BufferedReader(new FileReader("log.txt"))) {
             String str;
+            while ((str = in.readLine()) != null) {
+                tmp.add(str);
+            }
 
-            while ((str = in.readLine()) != null & raws != 0) {
-                log.append(str + "\n");
+            Collections.reverse(tmp);
+
+            for (String s : tmp) {
+                if (raws == 0) break;
+                res.add(s);
                 raws--;
+            }
+            Collections.reverse(res);
+
+            for (String i:res){
+                log.append(i+"\n");
             }
         } catch (IOException e) {
             e.printStackTrace();
