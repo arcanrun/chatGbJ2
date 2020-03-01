@@ -11,6 +11,9 @@ import java.net.Socket;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Vector;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ChatServer implements ServerSocketThreadListener, SocketThreadListener {
 
@@ -18,6 +21,7 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
     private ServerSocketThread server;
     private final DateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss: ");
     private Vector<SocketThread> clients = new Vector<>();
+    private ExecutorService ex;
 
     public ChatServer(ChatServerListener listener) {
         this.listener = listener;
@@ -28,6 +32,7 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
             putLog("Server already started");
         else
             server = new ServerSocketThread(this, "Server", port, 2000);
+            ex = Executors.newFixedThreadPool(4);
     }
 
     public void stop() {
@@ -81,7 +86,8 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
     public void onSocketAccepted(ServerSocketThread thread, ServerSocket server, Socket socket) {
         putLog("Client connected");
         String name = "SocketThread " + socket.getInetAddress() + ":" + socket.getPort();
-        new ClientThread(this, name, socket);
+        new ClientThread(this, name, socket, ex);
+
 
     }
 
@@ -95,11 +101,14 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
      *
      * */
 
+
+
     @Override
     public synchronized void onSocketStart(SocketThread thread, Socket socket) {
         putLog("Socket created");
 
     }
+
 
     @Override
     public synchronized void onSocketStop(SocketThread thread) {

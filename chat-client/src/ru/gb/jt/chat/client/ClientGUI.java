@@ -16,6 +16,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ClientGUI extends JFrame implements ActionListener, Thread.UncaughtExceptionHandler, SocketThreadListener {
 
@@ -41,6 +44,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     private SocketThread socketThread;
     private final DateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss: ");
     private final String WINDOW_TITLE = "Chat";
+    private ExecutorService ex;
 
     private ClientGUI() {
         Thread.setDefaultUncaughtExceptionHandler(this);
@@ -81,7 +85,8 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     private void connect() {
         try {
             Socket socket = new Socket(tfIPAddress.getText(), Integer.parseInt(tfPort.getText()));
-            socketThread = new SocketThread(this, "Client", socket);
+            ex = Executors.newFixedThreadPool(4);
+            socketThread = new SocketThread(this, "Client", socket, ex);
         } catch (IOException e) {
             showException(Thread.currentThread(), e);
         }

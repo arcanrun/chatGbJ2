@@ -5,6 +5,7 @@ import ru.gb.jt.network.SocketThread;
 import ru.gb.jt.network.SocketThreadListener;
 
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
 
 public class ClientThread extends SocketThread {
     private String nickname;
@@ -20,8 +21,8 @@ public class ClientThread extends SocketThread {
         close();
     }
 
-    public ClientThread(SocketThreadListener listener, String name, Socket socket) {
-        super(listener, name, socket);
+    public ClientThread(SocketThreadListener listener, String name, Socket socket, ExecutorService ex) {
+        super(listener, name, socket, ex);
     }
 
     public String getNickname() {
