@@ -11,3 +11,4 @@ public interface ServerSocketThreadListener {
     void onSocketAccepted(ServerSocketThread thread, ServerSocket server, Socket socket);
     void onServerException(ServerSocketThread thread, Throwable exception);
 }
+
