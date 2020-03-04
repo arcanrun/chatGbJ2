@@ -5,13 +5,24 @@ import ru.gb.jt.network.SocketThread;
 import ru.gb.jt.network.SocketThreadListener;
 
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
 
 public class ClientThread extends SocketThread {
     private String nickname;
     private boolean isAuthorized;
+    private boolean isReconnecting;
 
-    public ClientThread(SocketThreadListener listener, String name, Socket socket) {
-        super(listener, name, socket);
+    public boolean isReconnecting() {
+        return isReconnecting;
+    }
+
+    void reconnect() {
+        isReconnecting = true;
+        close();
+    }
+
+    public ClientThread(SocketThreadListener listener, String name, Socket socket, ExecutorService ex) {
+        super(listener, name, socket, ex);
     }
 
     public String getNickname() {
