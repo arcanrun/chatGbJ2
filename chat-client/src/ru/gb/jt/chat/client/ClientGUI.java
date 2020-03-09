@@ -8,9 +8,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 
 public class ClientGUI extends JFrame implements ActionListener, Thread.UncaughtExceptionHandler, SocketThreadListener {
 
@@ -34,19 +39,19 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     private final JList<String> userList = new JList<>();
     private boolean shownIoErrors = false;
     private SocketThread socketThread;
+    private final DateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss: ");
+    private final String WINDOW_TITLE = "Chat";
 
     private ClientGUI() {
         Thread.setDefaultUncaughtExceptionHandler(this);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        setTitle(WINDOW_TITLE);
         setSize(WIDTH, HEIGHT);
         log.setEditable(false);
         log.setLineWrap(true);
         JScrollPane scrollLog = new JScrollPane(log);
         JScrollPane scrollUser = new JScrollPane(userList);
-        String[] users = {"user1", "user2", "user3", "user4", "user5",
-                "user_with_an_exceptionally_long_name_in_this_chat"};
-        userList.setListData(users);
         scrollUser.setPreferredSize(new Dimension(100, 0));
         cbAlwaysOnTop.addActionListener(this);
         btnSend.addActionListener(this);
@@ -69,7 +74,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         add(scrollUser, BorderLayout.EAST);
         add(panelTop, BorderLayout.NORTH);
         add(panelBottom, BorderLayout.SOUTH);
-
+        createCensoredWordFile();
         setVisible(true);
     }
 
@@ -109,17 +114,49 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     private void sendMessage() {
         String msg = tfMessage.getText();
-        String username = tfLogin.getText();
         if ("".equals(msg)) return;
+//        String username = tfLogin.getText();
+
+
         tfMessage.setText(null);
         tfMessage.requestFocusInWindow();
-        socketThread.sendMessage(msg);
-        //wrtMsgToLogFile(msg, username);
+        socketThread.sendMessage(Library.getTypeBcastClient(msg));
+//        wrtMsgToLogFile(msg, username);
     }
 
-    private void wrtMsgToLogFile(String msg, String username) {
+    private void createCensoredWordFile() {
+        String[] stopWords = {"fuck", "bitch", "mazafaka"};
+        try (BufferedWriter out = new BufferedWriter(new FileWriter("censor.txt"))) {
+            for (String str : stopWords) {
+                out.write(str + "\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String censoredFilter(String msg) {
+        String res = msg;
+        try (BufferedReader in = new BufferedReader(new FileReader("censor.txt"))) {
+            String str;
+
+            while ((str = in.readLine()) != null) {
+                if (res.toLowerCase().contains(str)) {
+                    res = res.replace(str, "*".repeat(str.length())
+                    );
+                }
+
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return res;
+    }
+
+    private void wrtMsgToLogFile(String date,String msg, String username) {
         try (FileWriter out = new FileWriter("log.txt", true)) {
-            out.write(username + ": " + msg + "\n");
+            out.write(date + username + ": " + msg + "\n");
             out.flush();
         } catch (IOException e) {
             if (!shownIoErrors) {
@@ -127,6 +164,36 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
                 showException(Thread.currentThread(), e);
             }
         }
+    }
+
+    private void getHistory() {
+       ArrayList<String> tmp = new ArrayList<>();
+       ArrayList<String> res = new ArrayList<>();
+
+
+        int raws = 100;
+        try (BufferedReader in = new BufferedReader(new FileReader("log.txt"))) {
+            String str;
+            while ((str = in.readLine()) != null) {
+                tmp.add(str);
+            }
+
+            Collections.reverse(tmp);
+
+            for (String s : tmp) {
+                if (raws == 0) break;
+                res.add(s);
+                raws--;
+            }
+            Collections.reverse(res);
+
+            for (String i:res){
+                log.append(i+"\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private void putLog(String msg) {
@@ -162,7 +229,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     /**
      * Socket thread listener methods
-     * */
+     */
 
     @Override
     public void onSocketStart(SocketThread thread, Socket socket) {
@@ -173,12 +240,15 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     public void onSocketStop(SocketThread thread) {
         panelBottom.setVisible(false);
         panelTop.setVisible(true);
+        setTitle(WINDOW_TITLE);
+        userList.setListData(new String[0]);
     }
 
     @Override
     public void onSocketReady(SocketThread thread, Socket socket) {
         panelBottom.setVisible(true);
         panelTop.setVisible(false);
+        getHistory();
         String login = tfLogin.getText();
         String password = new String(tfPassword.getPassword());
         thread.sendMessage(Library.getAuthRequest(login, password));
@@ -187,11 +257,44 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     @Override
     public void onReceiveString(SocketThread thread, Socket socket, String msg) {
-        putLog(msg);
+        handleMessage(msg);
     }
 
     @Override
     public void onSocketException(SocketThread thread, Exception exception) {
         // showException(thread, exception);
     }
+
+    private void handleMessage(String msg) {
+        String[] arr = msg.split(Library.DELIMITER);
+        String msgType = arr[0];
+        switch (msgType) {
+            case Library.AUTH_ACCEPT:
+                setTitle(WINDOW_TITLE + " entered with nickname: " + arr[1]);
+                break;
+            case Library.AUTH_DENIED:
+                putLog(msg);
+                break;
+            case Library.MSG_FORMAT_ERROR:
+                putLog(msg);
+                socketThread.close();
+                break;
+            case Library.TYPE_BROADCAST:
+                String censoredMsg = censoredFilter(arr[3]);
+                putLog(DATE_FORMAT.format(Long.parseLong(arr[1])) +
+                        arr[2] + ": " + censoredMsg);
+                wrtMsgToLogFile(DATE_FORMAT.format(Long.parseLong(arr[1])), censoredMsg, arr[2]);
+                break;
+            case Library.USER_LIST:
+                String users = msg.substring(Library.USER_LIST.length() +
+                        Library.DELIMITER.length());
+                String[] usersArr = users.split(Library.DELIMITER);
+                Arrays.sort(usersArr);
+                userList.setListData(usersArr);
+                break;
+            default:
+                throw new RuntimeException("Unknown message type: " + msg);
+        }
+    }
 }
+
