@@ -26,9 +26,9 @@ public class Invoker {
         Method[] methods = c.getDeclaredMethods();
 
         checkAfterAndBeforeSuite(methods);
-        startAfterSuite("startTest");
+        startSuite("startTest");
         invokeTesting(methods);
-        startAfterSuite("endTest");
+        startSuite("endTest");
     }
 
     private void invokeTesting(Method[] methods) {
@@ -71,9 +71,9 @@ public class Invoker {
         }
     }
 
-    private void startAfterSuite(String endTest) {
+    private void startSuite(String test) {
         try {
-            Method end = c.getDeclaredMethod(endTest);
+            Method end = c.getDeclaredMethod(test);
             end.invoke(o);
 
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
