@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE log SYSTEM "logger.dtd">
+<log>
+<record>
+  <date>2020-03-09T09:48:24.999693Z</date>
+  <millis>1583747304999</millis>
+  <nanos>693000</nanos>
+  <sequence>0</sequence>
+  <logger>ru.gb.jt.chat.server.core.ChatServer</logger>
+  <level>INFO</level>
+  <class>ru.gb.jt.chat.server.core.ChatServer</class>
+  <method>onServerStart</method>
+  <thread>20</thread>
+  <message>Server thread started</message>
+</record>
+<record>
+  <date>2020-03-09T09:48:25.397418Z</date>
+  <millis>1583747305397</millis>
+  <nanos>418000</nanos>
+  <sequence>1</sequence>
+  <logger>ru.gb.jt.chat.server.core.ChatServer</logger>
+  <level>INFO</level>
+  <class>ru.gb.jt.chat.server.core.ChatServer</class>
+  <method>onServerSocketCreated</method>
+  <thread>20</thread>
+  <message>Server socket created</message>
+</record>
+<record>
+  <date>2020-03-09T09:48:27.408501Z</date>
+  <millis>1583747307408</millis>
+  <nanos>501000</nanos>
+  <sequence>2</sequence>
+  <logger>ru.gb.jt.chat.server.core.ChatServer</logger>
+  <level>INFO</level>
+  <class>ru.gb.jt.chat.server.core.ChatServer</class>
+  <method>onServerTimeout</method>
+  <thread>20</thread>
+  <message>Server timeout</message>
+</record>
+<record>
+  <date>2020-03-09T09:48:29.413775Z</date>
+  <millis>1583747309413</millis>
+  <nanos>775000</nanos>
+  <sequence>3</sequence>
+  <logger>ru.gb.jt.chat.server.core.ChatServer</logger>
+  <level>INFO</level>
+  <class>ru.gb.jt.chat.server.core.ChatServer</class>
+  <method>onServerTimeout</method>
+  <thread>20</thread>
+  <message>Server timeout</message>
+</record>
+<record>
+  <date>2020-03-09T09:48:31.419189Z</date>
+  <millis>1583747311419</millis>
+  <nanos>189000</nanos>
+  <sequence>4</sequence>
+  <logger>ru.gb.jt.chat.server.core.ChatServer</logger>
+  <level>INFO</level>
+  <class>ru.gb.jt.chat.server.core.ChatServer</class>
+  <method>onServerTimeout</method>
+  <thread>20</thread>
+  <message>Server timeout</message>
+</record>
+<record>
+  <date>2020-03-09T09:48:33.424514Z</date>
+  <millis>1583747313424</millis>
+  <nanos>514000</nanos>
+  <sequence>5</sequence>
+  <logger>ru.gb.jt.chat.server.core.ChatServer</logger>
+  <level>INFO</level>
+  <class>ru.gb.jt.chat.server.core.ChatServer</class>
+  <method>onServerTimeout</method>
+  <thread>20</thread>
+  <message>Server timeout</message>
+</record>
+<record>
+  <date>2020-03-09T09:48:35.433810Z</date>
+  <millis>1583747315433</millis>
+  <nanos>810000</nanos>
+  <sequence>6</sequence>
+  <logger>ru.gb.jt.chat.server.core.ChatServer</logger>
+  <level>INFO</level>
+  <class>ru.gb.jt.chat.server.core.ChatServer</class>
+  <method>onServerTimeout</method>
+  <thread>20</thread>
+  <message>Server timeout</message>
+</record>
+</log>
